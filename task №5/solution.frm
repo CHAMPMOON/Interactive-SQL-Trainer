@@ -1,17 +1,12 @@
-SET @cnt = (SELECT COUNT(DISTINCT step_id)
-            FROM step_student);
-
-WITH count_step_student (student_id, Прогресс) 
-    AS (SELECT student_id, ROUND(COUNT(DISTINCT step_id) / @cnt * 100)
-        FROM step_student
-        WHERE result = "correct"
-        GROUP BY student_id)
-SELECT student_name AS Студент, Прогресс,
-       CASE
-           WHEN Прогресс = 100 THEN "Сертификат с отличием"
-           WHEN Прогресс > 79 THEN "Сертификат"
-           ELSE ""
-       END AS Результат 
-FROM count_step_student
-     INNER JOIN student USING(student_id)
-ORDER BY Прогресс DESC, Студент;
+WITH st_ls (st, ls, tm)
+    AS (SELECT student_id, lesson_id, SUM(submission_time - attempt_time)
+        FROM step
+             INNER JOIN step_student USING(step_id)
+        WHERE (submission_time - attempt_time) / 3600 <= 4
+        GROUP BY student_id, lesson_id)
+SELECT ROW_NUMBER() OVER (ORDER BY ROUND(AVG(tm) / 3600, 2)) AS Номер,
+       CONCAT(module_id, ".", lesson_position, " ", lesson_name) AS Урок, 
+       ROUND(AVG(tm) / 3600, 2) AS Среднее_время
+FROM st_ls
+     INNER JOIN lesson ON st_ls.ls = lesson.lesson_id
+GROUP BY ls;

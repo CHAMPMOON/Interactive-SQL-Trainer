@@ -1,24 +1,10 @@
-SELECT Группа,
-    CASE
-        WHEN Группа = "I" THEN "от 0 до 10"
-        WHEN Группа = "II" THEN "от 11 до 15"
-        WHEN Группа = "III" THEN "от 16 до 27"
-        WHEN Группа = "IV" THEN "больше 27"
-    END AS Интервал,
-    COUNT(*) AS Количество
-FROM (SELECT student_name, rate, 
-        CASE
-            WHEN rate <= 10 THEN "I"
-            WHEN rate <= 15 THEN "II"
-            WHEN rate <= 27 THEN "III"
-            ELSE "IV"
-        END AS Группа
-        FROM (SELECT student_name, count(*) as rate
-              FROM (SELECT student_name, step_id
-                    FROM student 
-                         INNER JOIN step_student USING(student_id)
-                    WHERE result = "correct"
-                        GROUP BY student_name, step_id) query_in
-              GROUP BY student_name 
-              ORDER BY 2) query_in_1) query_in_2 
-GROUP BY Группа, Интервал;    
+SELECT student_name AS Студент,
+       CONCAT(LEFT(step_name, 20), "...") AS Шаг,
+       result AS Результат,
+       FROM_UNIXTIME(submission_time) AS Дата_отправки,
+       SEC_TO_TIME(submission_time - LAG(submission_time, 1, submission_time) 
+       OVER (ORDER BY  submission_time)) AS Разница
+FROM step
+     INNER JOIN step_student USING(step_id)
+     INNER JOIN student USING(student_id)
+WHERE student_name = "student_61";
