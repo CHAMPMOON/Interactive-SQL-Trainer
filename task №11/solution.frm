@@ -2,7 +2,8 @@ SELECT "I" AS Группа,
        student_name AS Студент, 
        COUNT(step_id) AS Количество_шагов
 FROM (SELECT student_name, step_id, submission_time, result,
-             IF(LEAD(result) OVER(PARTITION BY student_name, step_id ORDER BY student_name, submission_time DESC) =                 "correct" AND result = "wrong", 1, 0) AS one_group
+             IF(LEAD(result) OVER(PARTITION BY student_name, step_id ORDER BY student_name, submission_time DESC) =            
+                "correct" AND result = "wrong", 1, 0) AS one_group
       FROM student
            INNER JOIN step_student USING(student_id)) AS query_in
 GROUP BY student_name, one_group
@@ -31,4 +32,4 @@ FROM (SELECT student_name, step_id, COUNT(result) as all_cnt
       USING(student_name, step_id)
 WHERE all_cnt = wrong_cnt
 GROUP BY student_name
-ORDER BY Группа, Количество_шагов DESC, Студент
+ORDER BY Группа, Количество_шагов DESC, Студент;
